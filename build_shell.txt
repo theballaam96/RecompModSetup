@@ -3,6 +3,8 @@ set -e
 echo "Creating ./bin directory..."
 mkdir -p ./bin
 
+make
+
 echo "Running RecompModTool..."
 ./RecompModTool ./mod.toml ./bin
 
