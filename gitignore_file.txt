@@ -105,3 +105,6 @@ $RECYCLE.BIN/
 
 RecompModTool
 bin/
+*.z64
+*.n64
+*.v64
