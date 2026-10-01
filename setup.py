@@ -25,7 +25,6 @@ def main():
     )
     args = parser.parse_args()
 
-    # Fallback to interactive prompts if arguments weren't passed via CLI
     directory = args.directory
     if not directory:
         directory = input("Please enter the directory of your mod: ")
@@ -50,6 +49,16 @@ def main():
         )
     authors = [x.strip() for x in authors.split(",")]
 
+    cwd = Path.cwd()
+    target_path = Path(directory)
+    target_path.mkdir(parents=True, exist_ok=True)
+
+    mod_dir = cwd / "mod"
+    if mod_dir.is_dir():
+        shutil.copytree(mod_dir, target_path, dirs_exist_ok=True)
+    else:
+        print(f"Warning: Mod directory '{mod_dir}' not found.")
+
     mod_toml = f"""[manifest]
 id = "{mod_id}"
 version = "1.0.0"
@@ -67,46 +76,8 @@ func_reference_syms_file = "Dk64Syms/dump.toml"
 data_reference_syms_files = [ "Dk64Syms/data_dump.toml" ]
 additional_files = ["thumb.dds"]
 """
-    with open("mod.toml", "w") as fh:
+    with open(target_path / "mod.toml", "w") as fh:
         fh.write(mod_toml)
-
-    file_mapping = {
-        "gitignore_file.txt": ".gitignore",
-        "gitmodules_file.txt": ".gitmodules",
-        "license_file.txt": "LICENSE",
-        "Makefile": "Makefile",
-        "mod.ld": "mod.ld",
-        "readme_file.txt": "README.md",
-        "build_shell.txt": "build.sh",
-        "build_batch.txt": "build.bat",
-        "mod.toml": "mod.toml",
-    }
-    directory_mapping = {
-        "include": "include",
-        "offline_build": "offline_build",
-        "src": "src"
-    }
-
-    # Copying files and directories
-    cwd = Path.cwd()
-    target_path = Path(directory)
-    target_path.mkdir(parents=True, exist_ok=True)
-
-    for src_name, dst_name in file_mapping.items():
-        src_file = cwd / src_name
-        dst_file = target_path / dst_name
-
-        if src_file.is_file():
-            shutil.copy2(src_file, dst_file)
-
-    for src_dir, dst_dir in directory_mapping.items():
-        src_folder = cwd / src_dir
-        dst_folder = target_path / dst_dir
-
-        if src_folder.is_dir():
-            if dst_folder.exists():
-                shutil.rmtree(dst_folder)
-            shutil.copytree(src_folder, dst_folder)
 
     # Modify Readme
     readme_path = target_path / "README.md"
@@ -117,6 +88,7 @@ additional_files = ["thumb.dds"]
         content = content.replace("MOD_DESCRIPTION", description)
         readme_path.write_text(content, encoding="utf-8")
         print(f"Successfully modified: {readme_path}")
+        
     # Modify batch
     bat_path = target_path / "build.bat"
     if bat_path.is_file():
@@ -124,6 +96,7 @@ additional_files = ["thumb.dds"]
         content = content.replace("fixed_beaver_bother", mod_id)
         bat_path.write_text(content, encoding="utf-8")
         print(f"Successfully modified: {bat_path}")
+        
     # Modify shell
     shell_path = target_path / "build.sh"
     if shell_path.is_file():

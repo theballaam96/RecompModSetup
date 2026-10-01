@@ -4,6 +4,8 @@ setlocal
 echo Creating .\bin directory...
 if not exist ".\bin" mkdir ".\bin"
 
+python to_dds.py
+
 make
 
 echo Running RecompModTool...
